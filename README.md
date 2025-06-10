@@ -53,8 +53,8 @@ fofa:
 ### 3. Run example
 
 ```bash
-python main.py \
-  --query "title:Apache" \
+python Cybersearch.py \
+  --query 'title="Apache"' \
   --limit 5 \
   --fields ip,port,domain \
   --verbose
