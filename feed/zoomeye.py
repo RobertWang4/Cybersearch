@@ -1,6 +1,7 @@
 import requests
 import json
 import logging
+from urllib.parse import quote
 
 class Zoomeye:
     def __init__(self, zoomeye_api_key, verbose=False):
@@ -14,6 +15,7 @@ class Zoomeye:
     def auth(self):
         try:
             url = "https://api.zoomeye.org/resources-info"
+
 
             response = requests.get(url, headers=self.headers)
             logging.debug(f"Zoomeye response body: {response.json()}")
@@ -33,14 +35,16 @@ class Zoomeye:
 
     def search(self, query, limit=10):
         results = []
-        url = f"https://api.zoomeye.org/host/search?query={query}&page=1"
+        encoded_query = quote(query)
+        url = f"https://api.zoomeye.org/host/search?query={encoded_query}&page=1"
+
 
         try:
             response = requests.get(url, headers=self.headers)
             data = response.json()
 
             if self.verbose:
-                logging.debug(f"Raw response from ZoomEye: {data}")
+                logging.debug("Raw response from ZoomEye:\n" + json.dumps(data, indent=2, ensure_ascii=False))
 
             matches = data.get("matches", [])[:limit]
             for item in matches:

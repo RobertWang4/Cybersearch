@@ -7,7 +7,7 @@ from filters import apply_field_filter
 
 parser = argparse.ArgumentParser(description="Cybersearch - 聚合搜索工具（初版）")
 
-parser.add_argument("--query", required=True, help="搜索关键词，如 title:Apache")
+parser.add_argument("--query", required=True, help="搜索关键词，(如 title='Apache')")
 parser.add_argument("--limit", type=int, default=10, help="返回结果数量（默认10）")
 parser.add_argument("--fields", help="输出字段，逗号分隔，如 ip,port,title")
 parser.add_argument("--country", help="国家过滤（如 CN）")
