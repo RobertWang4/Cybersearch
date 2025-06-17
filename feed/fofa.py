@@ -3,7 +3,7 @@ import logging
 import base64
 import requests
 
-class fofa:
+class Fofa:
 
     def __init__(self,fofa_email,fofa_key,verbose=False):
         self.fofa_email = fofa_email
