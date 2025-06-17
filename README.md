@@ -66,7 +66,7 @@ python Cybersearch.py \
 
 | Argument     | Description                                |
 |--------------|--------------------------------------------|
-| `--query`    | Search keyword (e.g. `title:Apache`)       |
+| `--query`    | Search keyword (e.g. `title="Apache"`)       |
 | `--limit`    | Max results to return (default: 10)        |
 | `--fields`   | Output fields, comma-separated             |
 | `--country`  | Country filter (e.g. `CN`)                 |
@@ -82,9 +82,14 @@ cybersearch/
 ├── main.py               # CLI entry point
 ├── config.py             # API key loader
 ├── filters.py            # Field filtering
+├── utils.py              # Utility functions
 ├── feed/
 │   ├── zoomeye.py        # ZoomEye interface
-│   └── fofa.py           # FOFA support (planned)
+│   ├── fofa.py           # FOFA support
+│   ├── quake.py          # Quake support
+│   ├── shodan.py         # Shodan support
+│   ├── hunter.py         # Hunter support
+│   └── daydaymap.py      # DayDayMap support 
 ├── .env                  # (ignored) for API key
 ├── api_keys.yaml         # (ignored) for API key
 ├── requirements.txt      # Dependencies
@@ -103,10 +108,13 @@ cybersearch/
 ## 🛣️ Roadmap
 
 - [x] ZoomEye support
-- [ ] FOFA support
+- [x] FOFA support
+- [x] Quake support
+- [x] Shodan support
+- [x] Hunter support
+- [x] DayDayMap support
 - [ ] JSON export / file output
 - [ ] Multi-engine fallback (automatic)
-- [ ] Optional Web UI
 
 ---
 
