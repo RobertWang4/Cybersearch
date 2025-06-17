@@ -40,22 +40,30 @@ class Fofa:
             data = response.json()
 
             if self.verbose:
-                logging.debug(f"FOFA response: {response.json()}")
+                logging.debug(f"FOFA response: {json.dumps(data, indent=2)}")
 
+            if 'error' in data:
+                logging.error(f"FOFA API error: {data.get('error')}")
+                return []
 
-            for item in data.get("result",[]):
-                result={
-                    "ip": item.get("ip"),
-                    "port": item.get("portinfo", {}).get("port"),
-                    "title": item.get("title", [None])[0] if item.get("title") else None,
-                    "domain": item.get("hostname"),
-                    "country": item.get("geoinfo", {}).get("country", {}).get("code"),
-                    "feed":"fofa"
+            for item in data.get("results",[]):
+                if not isinstance(item, list) or len(item) < 6:
+                    continue
+                    
+                result = {
+                    "ip": item[0],
+                    "port": item[1],
+                    "title": item[2],
+                    "domain": item[3],
+                    "country": item[4],
+                    "feed": "fofa"
                 }
                 results.append(result)
-                return results
+                
+            # 记录结果数量
+            logging.info(f"FOFA返回了 {len(results)} 条结果")
+            return results
             
         except Exception as e:
             logging.error(f"FOFA search failed: {e}")
             return []
-       
