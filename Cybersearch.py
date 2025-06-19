@@ -27,18 +27,18 @@ else:
     logging.basicConfig(level=logging.INFO)
 
 def run_search():
-    engine_zoomeye = Zoomeye(CONFIG.get("zoomeye_api_key"), args.verbose)
-    engine_fofa = Fofa(CONFIG.get("fofa_email"), CONFIG.get("fofa_api_key"), args.verbose)
-    engine_shodan = Shodan(CONFIG.get("shodan_api_key"), args.verbose)
     engine_hunter = Hunter(CONFIG.get("hunter_api_key"), args.verbose)
+    engine_zoomeye = Zoomeye(CONFIG.get("zoomeye_api_key"), args.verbose)
+    engine_fofa = Fofa(CONFIG.get("fofa_api_key"), args.verbose,args.fields.split(","))
+    engine_shodan = Shodan(CONFIG.get("shodan_api_key"), args.verbose)
     engine_quake = Quake(CONFIG.get("quake_api_key"), args.verbose)
     engine_daydaymap = DayDayMap(CONFIG.get("daydaymap_api_key"), args.verbose)
 
     platforms = [
+        engine_hunter,
         engine_zoomeye,
         engine_fofa,
         engine_shodan,
-        engine_hunter,
         engine_quake,
         engine_daydaymap
     ]
@@ -48,7 +48,7 @@ def run_search():
         if engine == engine_zoomeye:
             api_key = CONFIG.get("zoomeye_api_key")
         elif engine == engine_fofa:
-            api_key = CONFIG.get("fofa_email") and CONFIG.get("fofa_api_key")
+            api_key = CONFIG.get("fofa_api_key")
         elif engine == engine_shodan:
             api_key = CONFIG.get("shodan_api_key")
         elif engine == engine_hunter:
@@ -82,7 +82,7 @@ def run_search():
         else:
             query = args.query
 
-            
+
         try:
             search_results = engine.search(
                 query=query,
@@ -93,8 +93,8 @@ def run_search():
         except Exception as e:
             logging.error(f"搜索引擎 {engine} 查询失败: {str(e)}")
 
-        if results:
-            logging.info(f"{engine} returned {len(results)} results") 
+        if search_results:
+            logging.info(f"{engine} returned {len(search_results)} results") 
 
     if not results:
         logging.warning("No results returned from any platform")

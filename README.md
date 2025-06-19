@@ -1,7 +1,7 @@
 # 🔍 CyberSearch - Aggregated Cyberspace Search Tool (v0.1)
 
 **CyberSearch** is a lightweight command-line tool that aggregates results from cyberspace search engines.  
-Currently supports **ZoomEye**, with future support for **FOFA**, **Quake**, and others.  
+Currently supports multiple platforms including **ZoomEye**, **FOFA**, **Quake**, **Shodan**, **Hunter**, and **DayDayMap** (with varying levels of support).  
 Useful for security researchers, red teamers, and digital reconnaissance.
 
 ---
@@ -47,6 +47,7 @@ fofa:
   email: your_email@example.com
   key: your_fofa_api_key
 ```
+YAML config file is expected at `~/.cybersearch/api_keys.yaml` by default. You may override this path in `config.py`.
 
 ---
 

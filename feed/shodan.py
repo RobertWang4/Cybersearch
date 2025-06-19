@@ -17,7 +17,6 @@ class Shodan:
             url =f"https://api.shodan.io/api-info?key={self.api_key}"
             response = requests.get(url,headers=self.headers)
             data = response.json()
-            logging.debug(f"Shodan response body: {data}")
             
             if "error" in data:
                 logging.error(f"Shodan API error: {data['error']}")
@@ -38,21 +37,21 @@ class Shodan:
         results=[]
         try:
             encode_query = quote(query)
-            url = f"https://api.shodan.io/shodan/host/search?key={self.api_key}&query={encode_query}"
+            url = f"https://api.shodan.io/shodan/host/search?key={self.api_key}&query={encode_query}size={limit}"
             response = requests.get(url, headers=self.headers)
             data = response.json()
 
             if self.verbose:
                 logging.debug(f"Shodan response: {response.json()}")
-            
-            # 修改键名为"matches"而不是"result"
+ 
+
             for item in data.get("matches",[]):
                 result={
-                    "ip": item.get("ip"),
-                    "port": item.get("portinfo", {}).get("port"),
-                    "title": item.get("title", [None])[0] if item.get("title") else None,
-                    "domain": item.get("hostname"),
-                    "country": item.get("geoinfo", {}).get("country", {}).get("code"),
+                    "ip": item.get("ip_str"),  # 使用ip_str而不是ip
+                    "port": item.get("port"),  # port直接在item中
+                    "title": item.get("http", {}).get("title"),  # title在http对象中
+                    "domain": item.get("hostnames", [None])[0] if item.get("hostnames") else None,  # 从hostnames数组获取第一个
+                    "country": item.get("location", {}).get("country_code"),  # country_code在location中
                     "feed": "shodan"
                 }
                 results.append(result)

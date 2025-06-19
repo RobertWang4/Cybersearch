@@ -4,7 +4,6 @@ def convert(query,platform):
     field_map = {
         "title=": {
             "shodan" : "title: ",
-            "hunter" : "web_title=",
         },
         "ip=": {
             "shodan" : "ip: "

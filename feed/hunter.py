@@ -1,6 +1,10 @@
 import json
 import requests
 import logging
+import base64
+import time
+logging.basicConfig(level=logging.INFO)
+time.sleep(3)
 
 class Hunter:
     def __init__(self, hunter_key, verbose=False):
@@ -14,17 +18,25 @@ class Hunter:
 
     def auth(self):
         try:
-            url = "https://hunter.qianxin.com/openApi/api/v2/account/info"
-            response = requests.get(url, headers=self.headers)
+            query = base64.b64encode('title="Apache"'.encode()).decode()
+            url = f"https://hunter.qianxin.com/openApi/search?api-key={self.hunter_key}"
+            params = {
+                "search": query,
+                "page": 1,
+                "page_size": 1
+            }
+            response = requests.get(url, headers=self.headers, params=params)
             data = response.json()
-            logging.debug(f"Hunter response body: {data}")
+
                 
-            if 'error' in data:
+            if data.get("code") != 200:
                 logging.error("Incorrect key!")
                 return False
             logging.info("Hunter authentication successful")
             logging.info(f"Username: {data.get('data', {}).get('username')}")
+            consume_date = data.get('data', {}).get('consume_quota', 0)
             credits = data.get('data', {}).get('rest_quota', 0)
+            logging.info(f"Hunter consume credits: {consume_date}")
             logging.info(f"Hunter credits: {credits}")
             return True
         except Exception as e:
@@ -33,9 +45,17 @@ class Hunter:
     
     def search(self, query, limit=10):
         try:
-            url = "https://hunter.qianxin.com/openApi/api/v2/domain/search"
+            url = f"https://hunter.qianxin.com/openApi/search?api-key={self.hunter_key}"
+            encode_query = base64.b64encode(query.encode()).decode()
+            if limit > 100 or limit % 10 != 0:
+                logging.warning("Hunter requires page_size to be a multiple of 10 between 10 and 100, adjusting limit")
+                if limit % 10 < 5:
+                    limit -= limit % 10
+                else:
+                    limit += 10 - (limit % 10)
+                logging.info(f"Adjusted limit to {limit}")
             params = {
-                "query": query,
+                "search": encode_query,
                 "page": 1,
                 "page_size": limit
             }
@@ -44,12 +64,16 @@ class Hunter:
 
             if self.verbose:
                 logging.info(f"Hunter response body: {data}")
+
+            if data.get("code") != 200:
+                logging.error(f"Hunter API error: {data.get('error')}")
+                return []
             
             results = []
-            for item in data.get("data", []):
+            for item in data.get("data", []).get("arr",[]):
                 result = {
                     "ip": item.get("ip"),
-                    "port": item.get("portinfo", {}).get("port"),
+                    "port": item.get("port"),
                     "title": item.get("web_title"),  
                     "domain": item.get("domain"),    
                     "country": item.get("country"),  

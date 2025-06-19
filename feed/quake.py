@@ -18,7 +18,6 @@ class Quake:
             url = "https://quake.360.cn/api/v3/user/info"
             response = requests.get(url, headers=self.headers)
             data = response.json()
-            logging.debug(f"Quake response body: {data}")
                 
             if 'code' in data and data['code'] != 0:
                 logging.error(f"Incorrect key! Error: {data.get('message')}")
