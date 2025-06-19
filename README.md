@@ -51,8 +51,9 @@ YAML config file is expected at `~/.cybersearch/api_keys.yaml` by default. You m
 
 ---
 
-### 3. Run example
+### 3. Run examples
 
+#### Search all platforms (default)
 ```bash
 python Cybersearch.py \
   --query 'title="Apache"' \
@@ -66,9 +67,10 @@ python Cybersearch.py \
 ## ⚙️ Command-Line Arguments
 
 | Argument     | Description                                |
-|--------------|--------------------------------------------|
+|--------------|--------------------------------------------||
 | `--query`    | Search keyword (e.g. `title="Apache"`)       |
 | `--limit`    | Max results to return (default: 10)        |
+| `--engine`   | Specify search engine: `fofa`, `zoomeye`, `hunter`, `quake`, `shodan`, `daydaymap`, or `all` (default: all) |
 | `--fields`   | Output fields, comma-separated             |
 | `--country`  | Country filter (e.g. `CN`)                 |
 | `--domain`   | Domain filter (e.g. `example.com`)         |
@@ -124,4 +126,3 @@ cybersearch/
 > Mengchen Wang ｜ Internship Project  
 >  
 > Feedback & PRs welcome 🙌
-```

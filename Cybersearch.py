@@ -18,70 +18,57 @@ parser.add_argument("--fields", help="Output fields, comma separated, e.g. ip,po
 parser.add_argument("--country", help="Filter by country (e.g. CN)")
 parser.add_argument("--domain", help="Filter by domain (e.g. example.com)")
 parser.add_argument("--verbose", action="store_true", help="Enable debug output")
+parser.add_argument(
+    "--engine",
+    type=str,
+    default="all",
+    help="Specify search engine (fofa, zoomeye, hunter, quake, shodan, daydaymap, or all)"
+)
 
 args = parser.parse_args()
+
 
 if args.verbose:
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.INFO)
 
-def run_search():
-    engine_hunter = Hunter(CONFIG.get("hunter_api_key"), args.verbose)
-    engine_zoomeye = Zoomeye(CONFIG.get("zoomeye_api_key"), args.verbose)
-    engine_fofa = Fofa(CONFIG.get("fofa_api_key"), args.verbose,args.fields.split(","))
-    engine_shodan = Shodan(CONFIG.get("shodan_api_key"), args.verbose)
-    engine_quake = Quake(CONFIG.get("quake_api_key"), args.verbose)
-    engine_daydaymap = DayDayMap(CONFIG.get("daydaymap_api_key"), args.verbose)
 
-    platforms = [
-        engine_hunter,
-        engine_zoomeye,
-        engine_fofa,
-        engine_shodan,
-        engine_quake,
-        engine_daydaymap
-    ]
+engines = {
+    "hunter": Hunter(CONFIG.get("hunter_api_key"), args.verbose),
+    "zoomeye": Zoomeye(CONFIG.get("zoomeye_api_key"), args.verbose),
+    "fofa": Fofa(CONFIG.get("fofa_api_key"), args.verbose, args.fields.split(",")),
+    "shodan": Shodan(CONFIG.get("shodan_api_key"), args.verbose),
+    "quake": Quake(CONFIG.get("quake_api_key"), args.verbose),
+    "daydaymap": DayDayMap(CONFIG.get("daydaymap_api_key"), args.verbose)
+}
+
+# 需要查询转换的引擎
+convertible_engines = {"fofa", "shodan", "hunter", "quake", "daydaymap"}
+
+selected_engine = args.engine.split(",")
+
+if "all" in selected_engine:
+    platforms = list(engines.values())
+else:
+    invalid = [name for name in selected_engine if name not in engines]
+    if invalid:
+        logging.warning(f"Unknown engines specified: {', '.join(invalid)}")
+    
+    platforms = [engines[name] for name in selected_engine if name in engines]
+
+def run_search(platforms=platforms):
     results = []
 
     for engine in platforms:
-        if engine == engine_zoomeye:
-            api_key = CONFIG.get("zoomeye_api_key")
-        elif engine == engine_fofa:
-            api_key = CONFIG.get("fofa_api_key")
-        elif engine == engine_shodan:
-            api_key = CONFIG.get("shodan_api_key")
-        elif engine == engine_hunter:
-            api_key = CONFIG.get("hunter_api_key")
-        elif engine == engine_quake:
-            api_key = CONFIG.get("quake_api_key")
-        elif engine == engine_daydaymap:
-            api_key = CONFIG.get("daydaymap_api_key")
-        else:
-            api_key = None
-            
-        if not api_key:
-            logging.warning(f"Skipping platform {engine}: API key not configured")
-            continue
-        
         logging.info(f"Attempting to use platform: {engine}")
         if not engine.auth():
             logging.warning(f"{engine} authentication failed, skipping")
             continue
 
-        if engine == engine_fofa:
-            query = utils.convert(args.query, "fofa")
-        elif engine == engine_shodan:
-            query = utils.convert(args.query, "shodan")
-        elif engine == engine_hunter:
-            query = utils.convert(args.query, "hunter")
-        elif engine == engine_quake:
-            query = utils.convert(args.query, "quake")
-        elif engine == engine_daydaymap:
-            query = utils.convert(args.query, "daydaymap")
-        else:
-            query = args.query
-
+        # 最简洁的查询转换逻辑
+        engine_name = next((name for name, obj in engines.items() if obj == engine), None)
+        query = utils.convert(args.query, engine_name) if engine_name in convertible_engines else args.query
 
         try:
             search_results = engine.search(
