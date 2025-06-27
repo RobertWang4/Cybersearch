@@ -22,3 +22,17 @@ click>=8.1.7
 
 # 进度条显示
 tqdm>=4.66.1
+
+# XML处理 (用于XML输出格式)
+dicttoxml>=1.7.16
+
+# Excel文件处理 (用于XLSX输出格式)
+pandas>=2.0.0
+openpyxl>=3.1.0
+
+# Hash计算 (用于icon hash功能)
+mmh3>=4.0.0
+
+# 正则表达式增强 (如果需要)
+regex>=2023.0.0
+

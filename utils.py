@@ -3,7 +3,10 @@ import json
 import csv
 import logging
 import dicttoxml
+import mmh3
+import base64
 from xml.dom.minidom import parseString
+
 
 def convert(query, platform):
     field_map = {
@@ -38,6 +41,9 @@ def convert(query, platform):
         "port=": {
             "shodan": "port: ",
             "quake": "port="
+        },
+        "icon_hash=":{
+            "shodan":"http.favicon.hash:"
         }
     }
     for old, platform_map in field_map.items():
@@ -49,12 +55,14 @@ def convert(query, platform):
     elif platform == "hunter" or platform == "daydaymap":
         pass
     elif platform == "shodan":
+        query = re.sub(r'http\.favicon\.hash:"([^"]+)"', r'http.favicon.hash:\1', query)
         query = query.replace(" AND ", " ").replace(" NOT ", " -")
     elif platform == "quake":
         query = query.replace(" AND ", " ")
-        query = re.sub(r'-\w+="[^"]+"', '', query).strip()
-
+        query = re.sub(r'-\w+="[^"]+"', '', query).strip()      
     return query
+
+
 
 def save_results(results, output_format, output_file):
     if not results:
@@ -88,3 +96,11 @@ def save_results(results, output_format, output_file):
                 f.write(xml)
     except Exception as e:
         logging.error(f"Error when saving results to {output_file}: {e}")
+
+
+
+def hash_icon(filepath):
+    with open(filepath,'rb') as f:
+        data = f.read()
+        b64 = base64.encodebytes(data).decode()
+        return mmh3.hash(b64)

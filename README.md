@@ -2,6 +2,7 @@
 
 **CyberSearch** is a lightweight command-line tool that aggregates results from cyberspace search engines.  
 Currently supports multiple platforms including **ZoomEye**, **FOFA**, **Quake**, **Shodan**, **Hunter**, and **DayDayMap** (with varying levels of support).  
+Supports batch search from TXT files and multiple output formats.  
 Useful for security researchers, red teamers, and digital reconnaissance.
 
 ---
@@ -9,21 +10,20 @@ Useful for security researchers, red teamers, and digital reconnaissance.
 ## ✅ Features
 
 - API key management via `.env` or `.yaml`
-- ZoomEye search support (`title`, `ip`, `domain`, `body`)
-- Flexible filters (country, domain)
-- Custom output fields via `--fields`
-- Verbose mode for debugging
-- Designed for multi-engine fallback (coming soon)
-
+- Multi-engine search support (ZoomEye, FOFA, Quake, Shodan, Hunter, DayDayMap)
+- Flexible filters and custom output fields
+- Multiple export formats (JSON, CSV, XML, XLSX, TXT)
+- Batch search from file input
+- Verbose debugging mode
+- Multi-engine fallback system (coming soon)
+- Unified search syntax across platforms
+- Icon hash search support
+- Intelligent result deduplication
 ---
 
 ## 🚀 Quick Start
 
 ### 1. Install dependencies
-
-```bash
-pip install -r requirements.txt
-
 
 ```bash
 pip install -r requirements.txt
@@ -67,14 +67,37 @@ python Cybersearch.py \
 ## ⚙️ Command-Line Arguments
 
 | Argument     | Description                                |
-|--------------|--------------------------------------------||
-| `--query`    | Search keyword (e.g. `title="Apache"`)       |
+|--------------|--------------------------------------------|
+| `--query`    | Search keyword (e.g. `title="Apache"`)     |
 | `--limit`    | Max results to return (default: 10)        |
-| `--engine`   | Specify search engine: `fofa`, `zoomeye`, `hunter`, `quake`, `shodan`, `daydaymap`, or `all` (default: all) |
+| `--engine`   | Search engine to use. Options: fofa, zoomeye, hunter, quake, shodan, daydaymap. Default: all (search all engines concurrently) |
 | `--fields`   | Output fields, comma-separated             |
 | `--country`  | Country filter (e.g. `CN`)                 |
 | `--domain`   | Domain filter (e.g. `example.com`)         |
 | `--verbose`  | Enable debug logging                       |
+| `--input`    | Path to TXT file for batch search          |
+| `--output`   | Output file path and format(default: `results.json`) |
+
+
+## 📤 Output 
+
+| Format | Description |
+|--------|-------------|
+| JSON | Structured data in JSON format |
+| CSV | Comma-separated values |
+| XML | Extensible Markup Language format |
+| XLSX | Microsoft Excel spreadsheet |
+| TXT | Plain text output |
+
+Each output contains configurable fields like:
+- IP address
+- Port number 
+- Domain name
+- Title
+- Country
+- And more...
+
+---
 
 ---
 
@@ -110,14 +133,18 @@ cybersearch/
 
 ## 🛣️ Roadmap
 
-- [x] ZoomEye support
-- [x] FOFA support
-- [x] Quake support
-- [x] Shodan support
-- [x] Hunter support
-- [x] DayDayMap support
-- [ ] JSON export / file output
-- [ ] Multi-engine fallback (automatic)
+### ✅ v0.1 (Current)
+- [x] Multi-platform API support (ZoomEye, FOFA, Quake, Shodan, Hunter, DayDayMap)
+- [x] File export: JSON, CSV, XML, XLSX, TXT
+- [x] Batch query from TXT input
+- [x] Custom output fields via `--fields`
+- [x] Verbose logging and debugging mode
+
+### 🔜 v0.2 (Planned)
+- [x] Icon hash search (.ico file support, local favicon hash lookup)
+- [ ] Pipeline input support (e.g., `echo 'title="Apache"' | python Cybersearch.py`)
+- [ ] Configurable field profiles via YAML
+- [ ] Result de-duplication across platforms
 
 ---
 

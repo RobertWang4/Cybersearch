@@ -18,6 +18,7 @@ parser.add_argument("--fields", help="Output fields, comma separated, e.g. ip,po
 parser.add_argument("--country", help="Filter by country (e.g. CN)")
 parser.add_argument("--domain", help="Filter by domain (e.g. example.com)")
 parser.add_argument("--verbose", action="store_true", help="Enable debug output")
+parser.add_argument("--icon", help="Icon hash to search(.icon)")
 parser.add_argument(
     "--engine",
     type=str,
@@ -161,6 +162,16 @@ if __name__ == "__main__":
             results = run_search(platforms, args.query)
         except Exception as e:
             logging.error(f"Error processing query '{args.query}': {e}")
+            sys.exit(1)
+    
+    elif args.icon:
+        icon_hash = utils.hash_icon(args.icon)
+        print(f"Icon hash: {icon_hash}")
+        query = f'icon_hash="{icon_hash}"'
+        try:
+            results = run_search(platforms, query)
+        except Exception as e:
+            logging.error(f"Error processing query '{query}': {e}")
             sys.exit(1)
     
     else:
