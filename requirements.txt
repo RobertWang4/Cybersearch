@@ -1,3 +1,24 @@
-requests
-PyYAML
-python-dotenv
+# 基础HTTP请求库
+requests>=2.31.0
+
+# YAML文件解析
+PyYAML>=6.0.1
+
+# 环境变量管理
+python-dotenv>=1.0.0
+
+# 常用工具库
+six>=1.16.0
+urllib3>=2.0.7
+
+# 日期时间处理
+python-dateutil>=2.8.2
+
+# 文件系统操作
+pathlib>=1.0.1
+
+# 命令行工具
+click>=8.1.7
+
+# 进度条显示
+tqdm>=4.66.1
