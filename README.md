@@ -77,6 +77,7 @@ python Cybersearch.py \
 | `--verbose`  | Enable debug logging                       |
 | `--input`    | Path to TXT file for batch search          |
 | `--output`   | Output file path and format(default: `results.json`) |
+| `--icon`     | Path to .ico file for icon hash search |
 
 
 ## 📤 Output 
