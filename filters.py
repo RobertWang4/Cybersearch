@@ -11,3 +11,30 @@ def apply_field_filter(results, fields=None):
         filtered.append(new_item)
 
     return filtered
+
+
+def match_filters(record,filters):
+
+    if "country" in filters:
+        if record.get("country") != filters["country"]:
+            return False
+    
+    if "title_contains" in filters:
+        title = record.get("title")
+        if not title or filters["title_contains"] not in title:
+            return False
+    
+    if "domain_contains" in filters:
+        domain = record.get("domain")
+        if not domain or filters["domain_contains"] not in domain:
+            return False
+
+    if "port_in" in filters:
+        if record.get("port") not in filters["port_in"]:
+            return False
+        
+    return True
+
+
+def filter_results(results,filters):
+    return [r for r in results if match_filters(r,filters)]

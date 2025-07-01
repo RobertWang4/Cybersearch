@@ -64,6 +64,12 @@ python Cybersearch.py \
 
 ---
 
+## ⚙️ Configuration File Support
+
+In addition to command-line arguments, CyberSearch supports setting parameters and filters through configuration files:
+
+### Configuration File Example (`config_filters.yaml`)
+
 ## ⚙️ Command-Line Arguments
 
 | Argument     | Description                                |
@@ -71,13 +77,14 @@ python Cybersearch.py \
 | `--query`    | Search keyword (e.g. `title="Apache"`)     |
 | `--limit`    | Max results to return (default: 10)        |
 | `--engine`   | Search engine to use. Options: fofa, zoomeye, hunter, quake, shodan, daydaymap. Default: all (search all engines concurrently) |
-| `--fields`   | Output fields, comma-separated             |
-| `--country`  | Country filter (e.g. `CN`)                 |
-| `--domain`   | Domain filter (e.g. `example.com`)         |
+| `--fields`     | Output fields, comma-separated             |
 | `--verbose`  | Enable debug logging                       |
 | `--input`    | Path to TXT file for batch search          |
 | `--output`   | Output file path and format(default: `results.json`) |
 | `--icon`     | Path to .ico file for icon hash search |
+| `--config`   | Path to custom config file |
+
+
 
 
 ## 📤 Output 
@@ -140,12 +147,10 @@ cybersearch/
 - [x] Batch query from TXT input
 - [x] Custom output fields via `--fields`
 - [x] Verbose logging and debugging mode
-
-### 🔜 v0.2 (Planned)
-- [x] Icon hash search (.ico file support, local favicon hash lookup)
-- [ ] Pipeline input support (e.g., `echo 'title="Apache"' | python Cybersearch.py`)
-- [ ] Configurable field profiles via YAML
-- [ ] Result de-duplication across platforms
+- [x] Icon hash search (.ico file support)
+- [x] Configuration file support with filtering
+- [x] Pipeline input support (stdin)
+- [x] Advanced result filtering (country, title, domain, port)
 
 ---
 
@@ -154,3 +159,42 @@ cybersearch/
 > Mengchen Wang ｜ Internship Project  
 >  
 > Feedback & PRs welcome 🙌
+
+### 2. 更新快速开始部分
+
+在第3步添加配置文件示例：
+
+```markdown:%2FUsers%2Frobot%2FCybersearch%2FREADME.md
+#### 使用配置文件进行过滤搜索
+```bash
+# 创建配置文件
+cat > config_filters.yaml << EOF
+filter:
+  country: US
+  port_in: [80, 443]
+engine: fofa
+limit: 10
+fields: ip,port,title,country
+EOF
+
+# 使用配置文件搜索
+python Cybersearch.py --config config_filters.yaml --query 'title="Apache"'
+### 2. 更新快速开始部分
+
+在第3步添加配置文件示例：
+
+```markdown:%2FUsers%2Frobot%2FCybersearch%2FREADME.md
+#### 使用配置文件进行过滤搜索
+```bash
+# 创建配置文件
+cat > config_filters.yaml << EOF
+filter:
+  country: US
+  port_in: [80, 443]
+engine: fofa
+limit: 10
+fields: ip,port,title,country
+EOF
+
+# 使用配置文件搜索
+python Cybersearch.py --config config_filters.yaml --query 'title="Apache"'

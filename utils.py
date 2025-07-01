@@ -5,6 +5,7 @@ import logging
 import dicttoxml
 import mmh3
 import base64
+import yaml
 from xml.dom.minidom import parseString
 
 
@@ -104,3 +105,7 @@ def hash_icon(filepath):
         data = f.read()
         b64 = base64.encodebytes(data).decode()
         return mmh3.hash(b64)
+
+def load_config(path):
+    with open(path,'r') as f:
+        return yaml.safe_load(f)

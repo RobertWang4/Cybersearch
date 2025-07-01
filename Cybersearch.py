@@ -1,6 +1,9 @@
 import argparse
 import logging
 import utils
+import sys
+import json
+import select
 from config import CONFIG       
 from feed.fofa import Fofa 
 from feed.shodan import Shodan
@@ -8,17 +11,16 @@ from feed.zoomeye import Zoomeye
 from feed.hunter import Hunter
 from feed.quake import Quake
 from feed.daydaymap import DayDayMap
-from filters import apply_field_filter
-    
+from filters import apply_field_filter,filter_results
+
 parser = argparse.ArgumentParser(description="Cybersearch - Aggregated Search Tool (Beta)")
 
 parser.add_argument("--query", required=False, help="Search keyword (e.g. title='Apache')")
 parser.add_argument("--limit", type=int, default=10, help="Number of results to return (default 10)")
-parser.add_argument("--fields", help="Output fields, comma separated, e.g. ip,port,title")
-parser.add_argument("--country", help="Filter by country (e.g. CN)")
-parser.add_argument("--domain", help="Filter by domain (e.g. example.com)")
-parser.add_argument("--verbose", action="store_true", help="Enable debug output")
+parser.add_argument("--fields", default="ip,port,title,country", help="Output fields, comma separated, e.g. ip,port,title")
+parser.add_argument("--verbose", default=False, action="store_true", help="Enable debug output")
 parser.add_argument("--icon", help="Icon hash to search(.icon)")
+parser.add_argument("--config", type=str, help="Path to config file")
 parser.add_argument(
     "--engine",
     type=str,
@@ -33,12 +35,42 @@ parser.add_argument(
 parser.add_argument(
     "--output",
     type=str,
-    default="results.json",
     help="Output file name and format (json, csv, or xml)"
 )
 
 args = parser.parse_args()
 
+if not args.query and not args.input and not args.icon:
+    if not sys.stdin.isatty() or select.select([sys.stdin], [], [], 0.1)[0]:
+        args.query = sys.stdin.read().strip()
+
+filters = {}
+if args.config:
+    config = utils.load_config(args.config)
+    if config is None:
+        raise ValueError(f"Failed to load config file, please check if the path is correct: {args.config}")
+    if "filter" in config:
+        filters = config.get("filter",{})
+    if "engine" in config:
+        args.engine = config["engine"]
+    if "limit" in config:
+        args.limit = config["limit"]
+    if "fields" in config:
+        args.fields = config["fields"]
+    if "verbose" in config:
+        args.verbose = config["verbose"]
+    if not args.icon and "icon" in config:
+        args.icon = config["icon"]
+    if not args.input and "input" in config:
+        args.input = config["input"]
+    if not args.output and "output" in config:
+        args.output = config["output"]
+    if not args.query and "query" in config:
+        args.query = config["query"]
+        
+if not args.query and not args.input and not args.icon:
+    print("Error: Please provide either --query or --input parameter")
+    sys.exit(1)
 
 if args.verbose:
     logging.basicConfig(level=logging.DEBUG)
@@ -55,7 +87,6 @@ engines = {
     "daydaymap": DayDayMap(CONFIG.get("daydaymap_api_key"), args.verbose)
 }
 
-# 需要查询转换的引擎
 convertible_engines = {"fofa", "shodan", "hunter", "quake", "daydaymap"}
 
 selected_engine = args.engine.split(",")
@@ -93,55 +124,27 @@ def run_search(platforms=platforms, query=args.query):
                 results.extend(search_results)
                 logging.info(f"{engine} returned {len(search_results)} results")
         except Exception as e:
-            logging.error(f"搜索引擎 {engine} 查询失败: {str(e)}")
+            logging.error(f"Search engine {engine} query failed: {str(e)}")
             continue
 
     if not results:
         logging.warning("No results returned from any platform")
         return []
 
-    # 按国家过滤结果
-    if args.country:
-        results = [r for r in results if r.get("country") == args.country]
-        logging.info(f"After country filtering: {len(results)} results remaining")
-        
-    # 按域名过滤结果
-    if args.domain:
-        results = [r for r in results if r.get("domain") and args.domain in r.get("domain")]
-        logging.info(f"After domain filtering: {len(results)} results remaining")
-
-    # 按字段过滤结果
     if args.fields:
         fields = [f.strip() for f in args.fields.split(",")]
         results = apply_field_filter(results, fields)
         logging.info(f"After field filtering: {len(results)} results remaining")
+    
+    if filters:
+        results = filter_results(results,filters)
+        logging.info(f"After config filter, {len(results)} results remaining")
 
-    if args.output:
-        # 检查文件名格式是否合法
-        if '.' not in args.output:
-            logging.error("You have to input a valid output file name (例如: results.json)")
-            return
-            
-        try:
-            output_format = args.output.split(".")[-1].lower()
-            output_file = args.output
-            
-            # 检查输出格式是否支持
-            if output_format not in ['json', 'csv', 'xml',"xlsx","txt"]:
-                logging.error("Unsupport format, only json/csv/xml/xlsx/txt")
-                return
-                
-            utils.save_results(results, output_format, output_file)
-            logging.info(f"Results already saved at {args.output}")
-            return
-            
-        except Exception as e:
-            logging.error(f"Error when save results to {args.output}: {str(e)}")
-            return
 
     return results
 
 if __name__ == "__main__":
+    results = []  
     if args.input:
         with open(args.input, "r") as f:
             queries = [q.strip() for q in f.readlines() if q.strip()] 
@@ -151,7 +154,8 @@ if __name__ == "__main__":
             for idx, query in enumerate(queries, start=1):
                 print(f"[{idx}/{total}] Searching: {query}")
                 try:
-                    results = run_search(platforms, query)
+                    batch_results = run_search(platforms, query)
+                    results.extend(batch_results)
                 except Exception as e:
                     logging.error(f"Error processing query '{query}': {e}")
                     continue
@@ -173,7 +177,30 @@ if __name__ == "__main__":
         except Exception as e:
             logging.error(f"Error processing query '{query}': {e}")
             sys.exit(1)
-    
+
+    if args.output:
+        if '.' not in args.output:
+            logging.error("You have to input a valid output file name (例如: results.json)")
+            sys.exit(1)
+
+        try:
+            output_format = args.output.split(".")[-1].lower()
+            output_file = args.output
+
+            if output_format not in ['json', 'csv', 'xml', "xlsx", "txt"]:
+                logging.error("Unsupport format, only json/csv/xml/xlsx/txt")
+                sys.exit(1)
+
+            utils.save_results(results, output_format, output_file)
+            logging.info(f"Results already saved at {args.output}")
+            
+        except Exception as e:
+            logging.error(f"Error when save results to {args.output}: {str(e)}")
+            sys.exit(1)
+            
     else:
-        print("Error: Please provide either --query or --input parameter")
-        sys.exit(1)
+        if results:
+            print(json.dumps(results, indent=2, ensure_ascii=False))
+        else:
+            print("No results found matching the criteria.")
+              

@@ -21,12 +21,14 @@ def load_api_key():
     config_path = os.path.expanduser("~/.Cybersearch/api_key.yaml")
     if os.path.exists(config_path):
         with open(config_path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
-    if config == None:
-        raise Exception("No API key found")
+            yaml_config = yaml.safe_load(f)
+            if yaml_config:
+                return yaml_config
 
-    else:
-        return config
+    if not any(config.values()):
+        raise Exception("No API key found")
+    
+    return config
         
         
 CONFIG = load_api_key()
