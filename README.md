@@ -56,9 +56,11 @@ YAML config file is expected at `~/.cybersearch/api_keys.yaml` by default. You m
 #### Search all platforms (default)
 ```bash
 python Cybersearch.py \
-  --query 'title="Apache"' \
-  --limit 5 \
-  --fields ip,port,domain \
+  --query 'app="Nginx" || app="Apache" || app="IIS"' \
+  --limit 100 \
+  --fields ip,port,domain,title,country \
+  --engine zoomeye,fofa \
+  --output results.xlsx \
   --verbose
 ```
 
@@ -160,41 +162,3 @@ cybersearch/
 >  
 > Feedback & PRs welcome 🙌
 
-### 2. 更新快速开始部分
-
-在第3步添加配置文件示例：
-
-```markdown:%2FUsers%2Frobot%2FCybersearch%2FREADME.md
-#### 使用配置文件进行过滤搜索
-```bash
-# 创建配置文件
-cat > config_filters.yaml << EOF
-filter:
-  country: US
-  port_in: [80, 443]
-engine: fofa
-limit: 10
-fields: ip,port,title,country
-EOF
-
-# 使用配置文件搜索
-python Cybersearch.py --config config_filters.yaml --query 'title="Apache"'
-### 2. 更新快速开始部分
-
-在第3步添加配置文件示例：
-
-```markdown:%2FUsers%2Frobot%2FCybersearch%2FREADME.md
-#### 使用配置文件进行过滤搜索
-```bash
-# 创建配置文件
-cat > config_filters.yaml << EOF
-filter:
-  country: US
-  port_in: [80, 443]
-engine: fofa
-limit: 10
-fields: ip,port,title,country
-EOF
-
-# 使用配置文件搜索
-python Cybersearch.py --config config_filters.yaml --query 'title="Apache"'
