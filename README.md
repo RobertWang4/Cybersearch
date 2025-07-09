@@ -105,6 +105,8 @@ In addition to command-line arguments, CyberSearch supports setting parameters a
 | `--output`   | Output file path and format(default: `results.json`) |
 | `--icon`     | Path to .ico file for icon hash search |
 | `--config`   | Path to custom config file |
+| `--show-fields` | Show available output fields for selected engine |
+
 
 
 
