@@ -29,27 +29,47 @@ Useful for security researchers, red teamers, and digital reconnaissance.
 pip install -r requirements.txt
 ```
 
-### 2. Configure API keys
+### 2. Configure API Keys
 
-You can choose either of the following:
+Supports three configuration methods (in order of priority):
 
-#### Option 1: `.env`
+#### Method 1: Environment Variables (Recommended)
 
+```bash
+export ZOOMEYE_API_KEY="your_zoomeye_api_key"
+export FOFA_API_KEY="your_fofa_api_key" 
+export SHODAN_API_KEY="your_shodan_api_key"
+export HUNTER_API_KEY="your_hunter_api_key"
+export QUAKE_API_KEY="your_quake_api_key"
+export DAYDAYMAP_API_KEY="your_daydaymap_api_key"
 ```
-ZOOMEYE_API_KEY=your_zoomeye_api_key
-```
 
-#### Option 2: YAML (`~/.cybersearch/api_keys.yaml`)
+#### Option 2: YAML (`~/.Cybersearch/api_keys.yaml`)
 
 ```yaml
 zoomeye: your_zoomeye_api_key
-fofa:
-  email: your_email@example.com
-  key: your_fofa_api_key
+fofa: your_fofa_api_key
+shodan: your_shodan_api_key
+hunter: your_hunter_api_key
+quake: your_quake_api_key
+daydaymap: your_daydaymap_api_key
 ```
-YAML config file is expected at `~/.cybersearch/api_keys.yaml` by default. You may override this path in `config.py`.
+YAML config file is expected at `~/.Cybersearch/api_keys.yaml` by default. You may override this path in `config.py`.
 
 ---
+#### Method 2: .env File
+
+Create a `.env` file in the project root directory:
+
+```env
+ZOOMEYE_API_KEY=your_zoomeye_api_key
+FOFA_API_KEY=your_fofa_api_key
+SHODAN_API_KEY=your_shodan_api_key
+HUNTER_API_KEY=your_hunter_api_key
+QUAKE_API_KEY=your_quake_api_key
+DAYDAYMAP_API_KEY=your_daydaymap_api_key
+```
+
 
 ### 3. Run examples
 

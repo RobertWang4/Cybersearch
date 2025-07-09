@@ -66,3 +66,6 @@ api_keys.yaml
 # ============================
 
 .ipynb_checkpoints/
+
+
+test.py

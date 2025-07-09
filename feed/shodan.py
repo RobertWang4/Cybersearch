@@ -17,7 +17,10 @@ class Shodan:
             url =f"https://api.shodan.io/api-info?key={self.api_key}"
             response = requests.get(url,headers=self.headers)
             data = response.json()
-            
+
+            if self.verbose:
+                logging.debug(f"Shodan response: {response.json()}")
+
             if "error" in data:
                 logging.error(f"Shodan API error: {data['error']}")
                 return False
@@ -37,26 +40,40 @@ class Shodan:
         results=[]
         try:
             encode_query = quote(query)
-            url = f"https://api.shodan.io/shodan/host/search?key={self.api_key}&query={encode_query}size={limit}"
+            url = f"https://api.shodan.io/shodan/host/search?key={self.api_key}&query={encode_query}&size={limit}"
             response = requests.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                logging.error(f"Shodan API returned status code: {response.status_code}")
+                logging.error(f"Response text: {response.text}")
+                return []
+                
             data = response.json()
-
+        
             if self.verbose:
-                logging.debug(f"Shodan response: {response.json()}")
- 
-
+                logging.debug(f"Shodan response: {json.dumps(data, indent=2)}")
+            
+            # 检查API错误
+            if "error" in data:
+                logging.error(f"Shodan search API error: {data['error']}")
+                return []
+        
             for item in data.get("matches",[]):
                 result={
-                    "ip": item.get("ip_str"),  # 使用ip_str而不是ip
-                    "port": item.get("port"),  # port直接在item中
-                    "title": item.get("http", {}).get("title"),  # title在http对象中
-                    "domain": item.get("hostnames", [None])[0] if item.get("hostnames") else None,  # 从hostnames数组获取第一个
-                    "country": item.get("location", {}).get("country_code"),  # country_code在location中
+                    "ip": item.get("ip_str"),
+                    "port": item.get("port"),
+                    "title": item.get("http", {}).get("title"),
+                    "domain": item.get("hostnames", [None])[0] if item.get("hostnames") else None,
+                    "country": item.get("location", {}).get("country_code"),
+                    "org": item.get("org"),
+                    "os": item.get("os"),
+                    "data": item.get("data"),
+                    "banner": item.get("banner"),
                     "feed": "shodan"
                 }
                 results.append(result)
             return results
-
+        
         except Exception as e:
             logging.error(f"Shodan search failed: {e}")
             return []

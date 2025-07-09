@@ -7,45 +7,118 @@ import mmh3
 import base64
 import yaml
 from xml.dom.minidom import parseString
+import hashlib
 
 
 def convert(query, platform):
     field_map = {
         "title=": {
-            "shodan": "title: ",
+            "shodan": "title:",
+            "quake": "title:",
+            "hunter": "web.title=",
+            "daydaymap": "web.title="
         },
         "ip=": {
-            "shodan": "ip: "
+            "shodan": "ip:",
+            "quake": "ip:",
+            "hunter": "ip=",
+            "daydaymap": "ip="
         },
-        "site=": {
-            "fofa": "domain= ",
-            "hunter": "domain=",
-            "quake": "host=",
+        "domain=": {
+            "quake": "domain:",
             "daydaymap": "domain=",
-            "shodan": "hostname: "
+            "shodan": "hostname: ",
+            "hunter": "domain=",
+            "quake": "domain:"
         },
         "body=": {
-            "shodan": "html: ",
-            "hunter": "content=",
+            "shodan": "html:",
+            "hunter": "web.body=",
+            "daydaymap": "web.body=",
+            "quake":"body:"
         },
-        "cert=": {
-            "shodan": "ssl.cert.subject.cn: ",
-            "hunter": "cert_info"
+        'ssl.cert.subject.cn=': {
+            'hunter': 'cert.subject=',
+            'daydaymap': 'cert.subject.cn=',
+            'fofa': 'cert.subject='
+        },
+        'ssl.cert.issuer.cn=': {
+            'hunter': 'cert.issuer_org=',
+            'daydaymap': 'cert.issuer.cn=',
+            'fofa': 'cert.issuer='
+        },
+        'ssl.cert.serial=': {
+            'hunter': 'cert.serial_number=',
+            'daydaymap': 'cert.sn=',
+            'fofa': 'cert.serial='
+        },
+        'ssl.cert.alg=': {
+            'hunter': 'cert.sha-256=',
+            'daydaymap': 'cert.md5=',
+            'fofa': 'cert.alg='  
+        },
+        'ssl=': {
+            'hunter': 'cert=',
+            'daydaymap': 'cert.subject=',
+            "quake": "cert:",
+            "shodan": "ssl.cert.subject.cn:",
+            "fofa": "cert="
         },
         "os=": {
-            "shodan": "os: ",
+            "shodan": "os:",
+            "quake": "os:",
+            "hunter": "ip.os=",
+            "daydaymap": "ip.os="
         },
         "country=": {
-            "shodan": "country: ",
-            "quake": "location.country_code="
+            "shodan": "country:",
+            "quake": "country:",
+            "hunter": "ip.country=",
+            "daydaymap": "ip.country="
         },
         "port=": {
-            "shodan": "port: ",
-            "quake": "port="
+            "shodan": "port:",
+            "quake": "port:",
+            "hunter": "ip.port=",
+            "daydaymap": "ip.port="
         },
-        "icon_hash=":{
-            "shodan":"http.favicon.hash:"
-        }
+        "iconhash=": {
+            "fofa": "icon_hash=",
+            "daydaymap": "web.icon=",
+            "hunter": "web.icon=",
+            "shodan": "http.favicon.hash:",
+            "quake": "favicon:"
+        },
+        "server=": {
+            "hunter": "header.server=",
+            "daydaymap": "web.server=",
+            "quake": "server:"
+        },
+        "app=": {
+            "hunter": "app=",
+            "daydaymap": "app="
+        },
+        "province=": {
+            "hunter": "ip.province=",
+            "daydaymap": "ip.province=",
+            "quake": "province:"
+        },
+        "city=": {
+            "hunter": "ip.city=",
+            "daydaymap": "ip.city=",
+            "quake": "city:"
+        },
+        "isp=": {
+            "hunter": "ip.isp=",
+            "daydaymap": "ip.isp=",
+            "quake": "isp:"
+        },
+        "http.header.status_code=": {
+            "hunter": "header.status_code=",
+            "daydaymap": "web.status_code=",
+            "quake": "status_code:"
+        },
+
     }
     for old, platform_map in field_map.items():
         if platform in platform_map:
@@ -61,6 +134,16 @@ def convert(query, platform):
     elif platform == "quake":
         query = query.replace(" AND ", " ")
         query = re.sub(r'-\w+="[^"]+"', '', query).strip()      
+    return query
+
+
+def fix_query(query):
+    if "=" in query and '"' not in query:
+        parts = query.split("=",1)
+        if len(parts) == 2:
+            field, value = parts
+            fix_query = f'{field}="{value}"'
+            return fix_query
     return query
 
 
@@ -100,12 +183,28 @@ def save_results(results, output_format, output_file):
 
 
 
-def hash_icon(filepath):
+def hash_icon(filepath, hash_type='mmh3'):
     with open(filepath,'rb') as f:
         data = f.read()
+        
+    if hash_type == 'md5':
+        return hashlib.md5(data).hexdigest()
+    else:
         b64 = base64.encodebytes(data).decode()
         return mmh3.hash(b64)
 
 def load_config(path):
     with open(path,'r') as f:
         return yaml.safe_load(f)
+
+def convert_fields(fields, engine):
+    if engine == "zoomeye":
+        converted_fields = []
+        for field in fields:
+            if field == "country":
+                converted_fields.append("country.name")
+            else:
+                converted_fields.append(field)
+        return converted_fields
+    return fields
+

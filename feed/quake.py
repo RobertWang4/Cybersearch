@@ -15,10 +15,13 @@ class Quake:
 
     def auth(self):
         try:
-            url = "https://quake.360.cn/api/v3/user/info"
+            url = "https://quake.360.net/api/v3/user/info"
             response = requests.get(url, headers=self.headers)
             data = response.json()
-                
+
+            if self.verbose:
+                logging.info(f"Quake response body: {json.dumps(data, indent=2)}")
+
             if 'code' in data and data['code'] != 0:
                 logging.error(f"Incorrect key! Error: {data.get('message')}")
                 return False
@@ -33,17 +36,18 @@ class Quake:
     
     def search(self, query, limit=10):
         try:
-            url = "https://quake.360.cn/api/v3/search/quake_service"
-            encoded_query = quote(query)
+            url = "https://quake.360.net/api/v3/search/quake_service"
+            
             params = {
-                "query": encoded_query,
+                "query": query,
                 "size": limit,
                 "page": 1
             }
             response = requests.post(url, headers=self.headers, json=params)
             data = response.json()
-
+    
             if self.verbose:
+                logging.info(f"Quake search query: {query}")
                 logging.info(f"Quake response body: {json.dumps(data, indent=2)}")
             
             if 'code' in data and data['code'] != 0:
@@ -54,17 +58,33 @@ class Quake:
             for item in data.get("data", []):
                 result = {
                     "ip": item.get("ip"),
-                    "port": item.get("port"),
-                    "title": item.get("service", {}).get("http", {}).get("title"),
-                    "domain": item.get("service", {}).get("http", {}).get("host"),
+                    "port": item.get("services", [{}])[0].get("port"),
+                    "title": None,
+                    "domain": item.get("hostname"),
                     "country": item.get("location", {}).get("country_code"),
+                    "org": item.get("location", {}).get("asname"),
+                    "location": {
+                        "country": item.get("location", {}).get("country_en"),
+                        "country_cn": item.get("location", {}).get("country_cn"),
+                        "province": item.get("location", {}).get("province_en"),
+                        "province_cn": item.get("location", {}).get("province_cn"),
+                        "city": item.get("location", {}).get("city_en"),
+                        "city_cn": item.get("location", {}).get("city_cn"),
+                        "district": item.get("location", {}).get("district_en"),
+                        "district_cn": item.get("location", {}).get("district_cn"),
+                        "isp": item.get("location", {}).get("isp"),
+                        "scene": item.get("location", {}).get("scene_en"),
+                        "scene_cn": item.get("location", {}).get("scene_cn"),
+                        "gps": item.get("location", {}).get("gps"),
+                        "radius": item.get("location", {}).get("radius")
+                    },
                     "feed": "quake"
                 }
                 results.append(result)
             
             logging.info(f"Quake returned {len(results)} results")
             return results
-
+    
         except Exception as e:
             logging.error(f"Quake search failed: {e}")
             return []

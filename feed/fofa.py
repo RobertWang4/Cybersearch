@@ -16,6 +16,9 @@ class Fofa:
             response = requests.get(url)
             data = response.json()
 
+            if self.verbose:
+                logging.info(f"FOFA response: {data}")
+                
             if data.get("error") != False:
                 logging.error("Incorrect key!")
                 return False

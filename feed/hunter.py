@@ -18,7 +18,7 @@ class Hunter:
 
     def auth(self):
         try:
-            query = base64.b64encode('title="Apache"'.encode()).decode()
+            query = base64.urlsafe_b64encode('title="Apache"'.encode("utf-8")).decode()
             url = f"https://hunter.qianxin.com/openApi/search?api-key={self.hunter_key}"
             params = {
                 "search": query,
@@ -28,7 +28,9 @@ class Hunter:
             response = requests.get(url, headers=self.headers, params=params)
             data = response.json()
 
-                
+            if self.verbose:
+                logging.info(f"Hunter response body: {data}")
+
             if data.get("code") != 200:
                 logging.error("Incorrect key!")
                 return False
@@ -46,7 +48,7 @@ class Hunter:
     def search(self, query, limit=10):
         try:
             url = f"https://hunter.qianxin.com/openApi/search?api-key={self.hunter_key}"
-            encode_query = base64.b64encode(query.encode()).decode()
+            encode_query = base64.urlsafe_b64encode(query.encode("utf-8")).decode()
             if limit > 100 or limit % 10 != 0:
                 logging.warning("Hunter requires page_size to be a multiple of 10 between 10 and 100, adjusting limit")
                 if limit % 10 < 5:
@@ -66,7 +68,7 @@ class Hunter:
                 logging.info(f"Hunter response body: {data}")
 
             if data.get("code") != 200:
-                logging.error(f"Hunter API error: {data.get('error')}")
+                logging.error(f"Hunter API error: {data.get('message')}")
                 return []
             
             results = []
@@ -74,10 +76,28 @@ class Hunter:
                 result = {
                     "ip": item.get("ip"),
                     "port": item.get("port"),
-                    "title": item.get("web_title"),  
-                    "domain": item.get("domain"),    
-                    "country": item.get("country"),  
-                    "feed": "hunter"                
+                    "title": item.get("web_title"),
+                    "domain": item.get("domain"),
+                    "country": item.get("country"),
+                    "os": item.get("os"),
+                    "banner": item.get("banner"),
+                    "province": item.get("province"),
+                    "city": item.get("city"),
+                    "base_protocol": item.get("base_protocol"),
+                    "protocol": item.get("protocol"),
+                    "component": item.get("component"),
+                    "url": item.get("url"),
+                    "updated_at": item.get("updated_at"),
+                    "status_code": item.get("status_code"),
+                    "number": item.get("number"),
+                    "company": item.get("company"),
+                    "is_web": item.get("is_web"),
+                    "is_risk": item.get("is_risk"),
+                    "is_risk_protocol": item.get("is_risk_protocol"),
+                    "as_org": item.get("as_org"),
+                    "isp": item.get("isp"),
+                    "header": item.get("header"),
+                    "feed": "hunter"
                 }
                 results.append(result)
             return results
