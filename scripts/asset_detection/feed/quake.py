@@ -1,7 +1,6 @@
 import json
 import requests
 import logging
-from urllib.parse import quote
 
 class Quake:
     def __init__(self, quake_key, verbose=False):
@@ -11,6 +10,10 @@ class Quake:
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:129.0) Gecko/20100101 Firefox/129.0",
             "Accept": "application/json",
             "X-QuakeToken": self.quake_key
+        }
+        self.points = {}
+        self.info = { 
+            "feed": "quake",
         }
 
     def auth(self):
@@ -27,8 +30,25 @@ class Quake:
                 return False
 
             logging.info("Quake authentication successful")
-            logging.info(f"Username: {data.get('data', {}).get('user_name')}")
-            logging.info(f"Remaining credits: {data.get('data', {}).get('month_remaining_credit')}")
+            credits = data.get('data', {}).get('credit')
+            persistent_credit = data.get('data', {}).get('persistent_credit')
+            self.points = {
+                "feed": "quake",
+                "credit": credits,
+                "persistent_credit": persistent_credit,
+            }
+            self.info = {
+                "feed": "quake",
+                "status": "success",
+                "username": data.get('data', {}).get('user', {}).get('username'),
+                "fullname": data.get('data', {}).get('user', {}).get('fullname'),
+                "id": data.get('data', {}).get('user', {}).get('id'),
+                "email": data.get('data', {}).get('user',{}).get("email"),
+                "mobile": data.get('data', {}).get('mobile_phone'),
+                "role": data.get('data', {}).get('role'),
+                "credits": credits,
+                "persistent_credit": persistent_credit,
+            }
             return True
         except Exception as e:
             logging.error(f"Quake authentication failed: {e}")
@@ -60,7 +80,7 @@ class Quake:
                     "ip": item.get("ip"),
                     "port": item.get("services", [{}])[0].get("port"),
                     "title": None,
-                    "domain": item.get("hostname"),
+                    "domain": item.get("domain"),
                     "country": item.get("location", {}).get("country_code"),
                     "org": item.get("location", {}).get("asname"),
                     "location": {

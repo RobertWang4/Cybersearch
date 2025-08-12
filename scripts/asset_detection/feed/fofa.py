@@ -9,6 +9,10 @@ class Fofa:
         self.fofa_key = fofa_key
         self.verbose = verbose
         self.fields = fields
+        self.points = {}
+        self.info = { 
+            "feed": "fofa",
+        }
 
     def auth(self):
         try:
@@ -23,7 +27,41 @@ class Fofa:
                 logging.error("Incorrect key!")
                 return False
             logging.info("FOFA authentication successful")
-            logging.info(f"FOFA points:{data.get('fofa_point')}")
+
+            is_vip = data.get("isvip", False)
+            points = data.get("remain_api_query", 0)
+            
+            if is_vip:
+                logging.info("FOFA VIP user")
+            else:
+                logging.info("FOFA free user")
+            self.points = {
+                "feed": "fofa",
+                "fcoin": data.get("fcoin", 0),
+                "fofa_point": data.get("fofa_point", 0),
+                "remain_free_point": data.get("remain_free_point", 0),
+                "remain_api_query": points,
+                "remain_api_data": data.get("remain_api_data", 0),
+            }
+            self.info = {
+                "feed": "fofa",
+                "status": "success",
+                "email": data.get("email"),
+                "username": data.get("username"),
+                "category": data.get("category"),
+                "fcoin": data.get("fcoin", 0),
+                "fofa_point": data.get("fofa_point", 0),
+                "remain_free_point": data.get("remain_free_point", 0),
+                "remain_api_query": points,
+                "remain_api_data": data.get("remain_api_data", 0),
+                "isvip": is_vip,
+                "vip_level": data.get("vip_level", 0),
+                "is_verified": data.get("is_verified", False),
+                "avatar": data.get("avatar"),
+                "message": data.get("message", ""),
+                "fofacli_ver": data.get("fofacli_ver"),
+                "fofa_server": data.get("fofa_server", False)
+            }
             return True
         
         except Exception as e:

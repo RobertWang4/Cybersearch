@@ -13,7 +13,7 @@ import hashlib
 def convert(query, platform):
     field_map = {
         "title=": {
-            "shodan": "title:",
+            "shodan": "http.title:",
             "quake": "title:",
             "hunter": "web.title=",
             "daydaymap": "web.title="
@@ -24,18 +24,34 @@ def convert(query, platform):
             "hunter": "ip=",
             "daydaymap": "ip="
         },
+        "cidr=": {
+            "shodan": "ip:",
+            "hunter": "ip=",
+            "daydaymap": "ip=",
+            "quake": "ip:",
+            "fofa": "ip="
+        },
         "domain=": {
             "quake": "domain:",
             "daydaymap": "domain=",
-            "shodan": "hostname: ",
+            "shodan": "domain:",
             "hunter": "domain=",
             "quake": "domain:"
+        },
+        "http.body=": {
+            "hunter":"web.body=",
+            "daydaymap":"web.body=",
+            "quake":"body:",
+            "shodan": "html:",
+            "fofa": "body=",
+            "zoomeye": "http.body="
         },
         "body=": {
             "shodan": "html:",
             "hunter": "web.body=",
             "daydaymap": "web.body=",
-            "quake":"body:"
+            "quake":"body:",
+            "zoomeye":"http.body="
         },
         'ssl.cert.subject.cn=': {
             'hunter': 'cert.subject=',
@@ -122,7 +138,9 @@ def convert(query, platform):
     }
     for old, platform_map in field_map.items():
         if platform in platform_map:
-            query = query.replace(old, platform_map[platform])
+            if old in query:
+                query = query.replace(old, platform_map[platform])
+                break
 
     if platform == "fofa":
         query = query.replace(" AND ", " && ").replace(" NOT ", " !")
@@ -133,7 +151,7 @@ def convert(query, platform):
         query = query.replace(" AND ", " ").replace(" NOT ", " -")
     elif platform == "quake":
         query = query.replace(" AND ", " ")
-        query = re.sub(r'-\w+="[^"]+"', '', query).strip()      
+        query = re.sub(r'-\w+="[^"]+"', '', query).strip()    
     return query
 
 
@@ -156,7 +174,7 @@ def save_results(results, output_format, output_file):
     try:
         if output_format == "json":
             with open(output_file, "w", encoding="utf-8") as f:
-                json.dump(results, f, ensure_ascii=False)
+                json.dump(results, f, ensure_ascii=False, indent=4)
         elif output_format == "csv":
             with open(output_file, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=results[0].keys())

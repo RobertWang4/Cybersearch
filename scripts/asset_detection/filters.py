@@ -30,9 +30,17 @@ def match_filters(record,filters):
             return False
 
     if "port_in" in filters:
-        if record.get("port") not in filters["port_in"]:
-            return False
-        
+        try:
+            port = record.get("port")
+            if port is not None:
+                port_int = int(port)  
+                if port_int not in filters["port_in"]:
+                    return False
+            else:
+                return False  
+        except (ValueError, TypeError):
+            return False 
+    
     return True
 
 

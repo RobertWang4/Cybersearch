@@ -15,6 +15,9 @@ class Hunter:
             "Accept": "application/json",
             "X-Api-Key": self.hunter_key
         }
+        self.info = { 
+            "feed": "hunter",
+        }
 
     def auth(self):
         try:
@@ -35,11 +38,14 @@ class Hunter:
                 logging.error("Incorrect key!")
                 return False
             logging.info("Hunter authentication successful")
-            logging.info(f"Username: {data.get('data', {}).get('username')}")
-            consume_date = data.get('data', {}).get('consume_quota', 0)
+            consume_data = data.get('data', {}).get('consume_quota', 0)
             credits = data.get('data', {}).get('rest_quota', 0)
-            logging.info(f"Hunter consume credits: {consume_date}")
-            logging.info(f"Hunter credits: {credits}")
+            self.info = self.points = {
+                "feed": "hunter",
+                "status": "success",
+                "consume_data": consume_data,
+                "credits": credits,
+            }
             return True
         except Exception as e:
             logging.error(f"Hunter authentication failed: {e}")

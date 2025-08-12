@@ -8,9 +8,11 @@ class Zoomeye:
         self.zoomeye_api_key = zoomeye_api_key
         self.verbose = verbose
         self.zoomeye_api_key = zoomeye_api_key
-        self.fieldss =fields
-        self.points = 0
-        self.zoomeye_points = 0
+        self.fields = fields
+        self.points = {}
+        self.info = { 
+            "feed": "zoomeye",
+        }
 
     def auth(self):
         try:
@@ -33,15 +35,35 @@ class Zoomeye:
             if response_json.get("code") != 60000:
                 logging.error("ZoomEye auth failed or key invalid")
                 return False
-
+            
             logging.info("ZoomEye authentication successful")
             data = response_json.get("data", {})
             subscription = data.get("subscription", {})
-            self.points = subscription.get("points")
-            self.zoomeye_points = subscription.get("zoomeye_points")
-            logging.info(f"Username: {data.get('username')}")
-            logging.info(f"Remaining points: {self.points}")
-            logging.info(f"Zoomeye points: {self.zoomeye_points}")
+            plan = subscription.get("plan")
+            logging.info(f"Your account plan is {plan}")
+            points = subscription.get("points")
+            zoomeye_points = subscription.get("zoomeye_points")
+            self.points = {
+                "feed": "zoomeye",
+                "plan": plan,
+                "points": points,
+                "zoomeye_points": zoomeye_points
+            }
+            self.info = {
+                "feed": "zoomeye",
+                "status": "success",
+                "username": data.get("username"),
+                "email": data.get("email"),
+                "phone": data.get("phone"),
+                "created_at": data.get("created_at"),
+                "plan": plan,
+                "end_date": subscription.get("end_date"),
+                "points": points,
+                "zoomeye_points": zoomeye_points
+            }
+            if points <= 0 and zoomeye_points <= 0:
+                logging.warning("Zoomeye points are not enough!")
+                return False
             return True
 
         except Exception as e:
@@ -71,7 +93,7 @@ class Zoomeye:
                     "qbase64": encoded_query,
                     "page": page,
                     "size": current_size,
-                    "fields": ",".join(self.fieldss)
+                    "fields": ",".join(self.fields)
                 }
                 
                 response = requests.post(url, headers=headers, json=data)
@@ -144,10 +166,7 @@ class Zoomeye:
                         "feed": "zoomeye"
                     }
                     results.append(record)
-                    
-                if len(results) >= limit:
-                        break
-            
+
             return results
         
         except Exception as e:

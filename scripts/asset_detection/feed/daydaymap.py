@@ -10,6 +10,9 @@ class DayDayMap:
         self.daydaymap_key = daydaymap_key
         self.verbose = verbose
         self.verify_ssl = verify_ssl
+        self.info = { 
+            "feed": "daydaymap",
+        }
  
         if not verify_ssl:
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -40,6 +43,10 @@ class DayDayMap:
                 return False
 
             logging.info("DayDayMap authentication successful")
+            self.info = {
+                "feed": "daydaymap",
+                "status": "success"
+            }
             return True
 
         except Exception as e:
@@ -100,7 +107,6 @@ class DayDayMap:
                     "feed": "daydaymap"
                 }
                 results.append(result)
-            
             logging.info(f"DayDayMap returned {len(results)} results")
             return results
 
